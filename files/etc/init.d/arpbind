@@ -44,6 +44,7 @@ arpconf_foreach()
 
 start()
 {
+	clean_arp
 	config_load 'arpbind'
 	config_foreach arpconf_foreach 'arpbind'
 }
