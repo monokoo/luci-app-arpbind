@@ -2,26 +2,21 @@
 # OpenWrt 静态ARP绑定 启动脚本
 # Copyright (C) 2015 GuoGuo <gch981213@gmail.com>
 
-. /lib/functions.sh
-. /lib/functions/network.sh
-
-#清除单接口ARP
-#参数：$1:接口名称
-# if_clean_arp()
-# {
-	# [ -z "$1" ] && return
-	# ip link set arp off dev $1
-	# ip link set arp on dev $1
-# }
+START=99
 
 #清除系统所有ARP
 #参数：无
 clean_arp() {
-	arppermlist=$(ip neigh|grep -w PERMANENT|awk -F'PERMANENT' '{print $1}')
+	arppermlist=$(ip neigh show|grep -w PERMANENT|awk -F'PERMANENT' '{print $1}')
 	[ -n "$arppermlist" ] && {
+		
+		IFS=$'\n'
 		for arp in $arppermlist
-		do		
-			ip neigh del $arp
+		do	
+			ipaddr=$(echo "$arp" | awk -F' ' '{print $1}')
+			macaddr=$(echo "$arp" | awk -F' ' '{print $5}')
+			ifname=$(echo "$arp" | awk -F' ' '{print $3}')
+			ip neigh del $ipaddr lladdr $macaddr dev $ifname
 		done
 	}
 }
@@ -48,7 +43,6 @@ arpconf_foreach() {
 }
 
 start() {
-	clean_arp
 	config_load 'arpbind'
 	config_foreach arpconf_foreach 'arpbind'
 }
