@@ -7,34 +7,39 @@
 
 #清除单接口ARP
 #参数：$1:接口名称
-if_clean_arp()
-{
-	[ -z "$1" ] && return
-	ip link set arp off dev $1
-	ip link set arp on dev $1
-}
+# if_clean_arp()
+# {
+	# [ -z "$1" ] && return
+	# ip link set arp off dev $1
+	# ip link set arp on dev $1
+# }
 
 #清除系统所有ARP
 #参数：无
-clean_arp()
-{
-	for i in $(ls /sys/class/net)
-	do
-		if_clean_arp $i
-	done
+clean_arp() {
+	arppermlist=$(ip neigh|grep -w PERMANENT|awk -F'PERMANENT' '{print $1}')
+	[ -n "$arppermlist" ] && {
+		for arp in $arppermlist
+		do		
+			ip neigh del $arp
+		done
+	}
 }
 
 #添加静态ARP绑定
 #参数：$1:IP地址 $2:MAC地址 $3:接口名称
-add_arp()
-{
+add_arp() {
 	[ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] && return
 	echo "Adding ARP:IP Addr:$1  MAC Addr:$2  Interface:$3"
-	ip neigh add $1 lladdr $2 nud permanent dev $3
+	arpnum=$(arp -a|grep -c "$1")
+	if [ "$arpnum" -eq 0 ]; then
+		ip neigh add $1 lladdr $2 nud permanent dev $3
+	else
+		ip neigh change $1 lladdr $2 nud permanent dev $3
+	fi
 }
 
-arpconf_foreach()
-{
+arpconf_foreach() {
 	config_get ipaddr "$1" 'ipaddr'
 	config_get macaddr "$1" 'macaddr'
 	config_get ifname "$1" 'ifname'
@@ -42,15 +47,13 @@ arpconf_foreach()
 	add_arp $ipaddr $macaddr $ifname
 }
 
-start()
-{
+start() {
 	clean_arp
 	config_load 'arpbind'
 	config_foreach arpconf_foreach 'arpbind'
 }
 
-stop()
-{
+stop() {
 	clean_arp
 }
 
