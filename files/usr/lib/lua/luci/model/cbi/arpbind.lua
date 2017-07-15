@@ -9,14 +9,14 @@ s.addremove=true
 nolimit_ip=s:option(Value,"ipaddr",translate("IP Address"))
 nolimit_ip.datatype="ipaddr"
 nolimit_ip.optional=false
-luci.ip.neighbors(function(x)
-nolimit_ip:value(x["IP address"])
+luci.ip.neighbors({family = 4}, function(neighbor)
+nolimit_ip:value(neighbor.dest:string(), "%s" %{neighbor.dest:string()})
 end)
 nolimit_mac=s:option(Value,"macaddr",translate("MAC Address"))
 nolimit_mac.datatype="macaddr"
 nolimit_mac.optional=false
-luci.ip.neighbors(function(x)
-nolimit_mac:value(x["HW address"],x["HW address"].." ("..x["IP address"]..")")
+luci.ip.neighbors({family = 4}, function(neighbor)
+nolimit_mac:value(neighbor.mac, "%s (%s)" %{neighbor.mac, neighbor.dest:string()})
 end)
 a=s:option(ListValue,"ifname",translate("Interface"))
 for t,e in ipairs(e)do
