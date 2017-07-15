@@ -9,13 +9,13 @@ s.addremove=true
 nolimit_ip=s:option(Value,"ipaddr",translate("IP Address"))
 nolimit_ip.datatype="ipaddr"
 nolimit_ip.optional=false
-t.net.arptable(function(x)
+luci.ip.neighbors(function(x)
 nolimit_ip:value(x["IP address"])
 end)
 nolimit_mac=s:option(Value,"macaddr",translate("MAC Address"))
 nolimit_mac.datatype="macaddr"
 nolimit_mac.optional=false
-t.net.arptable(function(x)
+luci.ip.neighbors(function(x)
 nolimit_mac:value(x["HW address"],x["HW address"].." ("..x["IP address"]..")")
 end)
 a=s:option(ListValue,"ifname",translate("Interface"))
