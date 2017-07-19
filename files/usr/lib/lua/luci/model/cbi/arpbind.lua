@@ -10,13 +10,15 @@ nolimit_ip=s:option(Value,"ipaddr",translate("IP Address"))
 nolimit_ip.datatype="ipaddr"
 nolimit_ip.optional=false
 luci.ip.neighbors({family = 4}, function(neighbor)
-nolimit_ip:value(neighbor.dest:string(), "%s" %{neighbor.dest:string()})
+if neighbor.reachable then
+	nolimit_ip:value(neighbor.dest:string(), "%s (%s)" %{neighbor.dest:string(), neighbor.mac})
+end
 end)
 nolimit_mac=s:option(Value,"macaddr",translate("MAC Address"))
 nolimit_mac.datatype="macaddr"
 nolimit_mac.optional=false
-luci.ip.neighbors({family = 4}, function(neighbor)
-nolimit_mac:value(neighbor.mac, "%s (%s)" %{neighbor.mac, neighbor.dest:string()})
+t.net.mac_hints(function(t,a)
+nolimit_mac:value(t,"%s (%s)"%{t,a})                                                                                                                    
 end)
 a=s:option(ListValue,"ifname",translate("Interface"))
 for t,e in ipairs(e)do
